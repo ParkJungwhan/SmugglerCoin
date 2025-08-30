@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SmugglerCoin": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
