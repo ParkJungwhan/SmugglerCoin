@@ -337,23 +337,514 @@
 
 # 출금
 ## 코인 출금 리스트 조회
+- Get : https://api.bithumb.com/v1/withdraws
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 가상자산 출금 목록을 조회합니다.
+- Request Parameters
+    - currency(string) : 화폐 코드(영문대문자), optional
+    - state(string,"done") : 출금 상태
+        - done : 전체 출금 완료
+        - cancel : 출금 취소
+        - processing : 출금 처리중
+        - requested : 출금 요청
+    - uuid(array) : 출금 UUID의 목록, optional
+    - txids(array) : 출금 트랜잭션 ID의 목록
+    - page(number,1) : 페이지 수, optional
+    - limit(number,100) : 개수 제한(기본 :100, 최대 100), optional
+    - order_by(string,"desc") : 정렬 방식, asc : 오름차순/desc : 내림차순, optional
+- Response
+    - type(string) : 입출금 유형
+    - uuid(string) : 출금 UUID
+    - currency(string) : 화폐 코드(영문대문자)
+    - net_type(string) : 출금 네트워크
+    - state(string) : 출금 상태
+        - PROCESSING : 진행중
+        - DONE : 완료
+        - CANCELLED : 취소됨
+    - created_at(DateString) : 출금 요청 시각
+    - done_at(DateString) : 출금 완료 시각
+    - amount(numstring) : 출금 수량
+    - fee(numstring) : 출금 수수료
+    - transaction_type(string, "일반출금") : 출금 유형
+- Response Example
+```json
+[
+  {
+    "type": "withdraw",
+    "uuid": "200347674",
+    "currency": "TRX",
+    "net_type": null,
+    "txid": "20240425231724.50893",
+    "state": "DONE",
+    "created_at": "2024-04-25T23:19:28+09:00",
+    "done_at": "2024-04-25T23:19:28+09:00",
+    "amount": "99988545780.9056",
+    "fee": "0",
+    "transaction_type": null
+  },
+  {
+    "type": "withdraw",
+    "uuid": "200347279",
+    "currency": "TRX",
+    "net_type": null,
+    "txid": "20240425182026.6693405",
+    "state": "DONE",
+    "created_at": "2024-04-25T18:22:11+09:00",
+    "done_at": "2024-04-25T18:22:11+09:00",
+    "amount": "10000000",
+    "fee": "0",
+    "transaction_type": null
+  }
+]
+```
 
 ## 원화 출금 리스트 조회
+- Get : https://api.bithumb.com/v1/withdraws/krw
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- Request Parameters
+    - state(string) : 출금 상태
+        - PROCESSING : 진행중
+        - DONE : 완료
+        - CANCELLED : 취소됨
+    - uuid(array) : 출금 UUID의 목록
+    - txids(array) : 출금 트랜잭션 ID의 목록
+    - page(number,1) : 페이지 수
+    - limit(number,100) : 개수 제한(기본 :100, 최대 100)
+    - order_by(string,"desc") : 정렬 방식, asc : 오름차순/desc : 내림차순
+- Response
+    - type(string) : 입출금 유형
+    - uuid(string) : 출금 UUID
+    - currency(string) : 화폐 코드(영문대문자)
+    - txid(string) : 출금 트랜잭션 ID
+    - state(string) : 출금 상태
+        - PROCESSING : 진행중
+        - DONE : 완료
+        - CANCELLED : 취소됨
+    - created_at(DateString) : 출금 요청 시각
+    - done_at(DateString) : 출금 완료 시각
+    - amount(numstring) : 출금 금액
+    - fee(numstring) : 출금 수수료
+    - transaction_type(string, "일반출금") : 출금 유형
+- Response Example
+```json
+[
+  {
+    "type": "withdraw",
+    "uuid": "12703781",
+    "currency": "KRW",
+    "net_type": null,
+    "txid": "1596146",
+    "state": "DONE",
+    "created_at": "2024-07-06T17:36:22+09:00",
+    "done_at": "2024-07-06T17:36:39+09:00",
+    "amount": "6000",
+    "fee": "1000",
+    "transaction_type": "default"
+  },
+  {
+    "type": "withdraw",
+    "uuid": "12703780",
+    "currency": "KRW",
+    "net_type": null,
+    "txid": "1596145",
+    "state": "DONE",
+    "created_at": "2024-07-06T17:35:58+09:00",
+    "done_at": "2024-07-06T17:36:18+09:00",
+    "amount": "6000",
+    "fee": "1000",
+    "transaction_type": "default"
+  }
+]
+```
+
 
 ## 개별 출금 조회
+- Get : https://api.bithumb.com/v1/withdraw
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 출금 UUID로 해당 출금 건의 출금 내역을 조회합니다.
+- Request Parameters
+    - currency(string) : 화폐 코드(영문대문자), required
+    - uuid(string) : 출금 UUID
+    - txid(string) : 출금 트랜잭션 ID
+- Response
+    - type(string) : 입출금 유형
+    - uuid(string) : 출금 UUID
+    - currency(string) : 화폐 코드(영문대문자)
+    - net_type(string) : 출금 네트워크
+    - txid(string) : 출금 트랜잭션 ID
+    - state(string) : 출금 상태
+        - PROCESSING : 진행중
+        - DONE : 완료
+        - CANCELLED : 취소됨
+    - created_at(DateString) : 출금 요청 시각
+    - done_at(DateString) : 출금 완료 시각
+    - amount(numstring) : 출금 수량
+    - fee(numstring) : 출금 수수료
+    - transaction_type(string, "일반출금") : 출금 유형
+- Response Example
+```json
+{
+  "type": "withdraw",
+  "uuid": "200359853",
+  "currency": "MTL",
+  "net_type": "MTL_ETH",
+  "txid": "0x28d331ddca9fb3b5a413737b3062289db4995dfeaddb96c4d82abd591fe17a52",
+  "state": "DONE",
+  "created_at": "2024-06-28T15:13:10+09:00",
+  "done_at": "2024-06-28T15:17:17+09:00",
+  "amount": "0.6113",
+  "fee": "0.1",
+  "transaction_type": null
+}
+```
+
+## 출금 가능 정보
+- Get : https://api.bithumb.com/v1/withdraws/chance
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 해당 통화의 출금 가능 정보를 조회합니다.
+- Request Parameters
+    - currency(string) : 화폐 코드(영문대문자), required
+    - net_type(string) : 출금 네트워크, required
+- Response
+    - member_level : 사용자의 보안등급 정보
+        - member_level.security_level(int) : 보안등급
+        - member_level.fee_level(int) : 사용자의 수수료등급
+        - member_level.email_verified(bool) : 이메일 인증 여부
+        - member_level.identity_auth_verified(bool) : 실명 인증 여부
+        - member_level.bank_account_verified(bool) : 계좌 인증 여부
+        - member_level.two_factor_auth_verified(bool) : 2FA 인증 수단 활성화 여부
+        - member_level.locked(bool) : 계정 보호 상태
+        - member_level.wallet_locked(bool) : 출금 보호 상태
+    - currency : 화폐 정보
+        - currency.code(string) : 화폐 코드(영문대문자)
+        - currency.withdraw_fee(numstring) : 출금 수수료
+        - currency.is_coin(bool) : 화폐의 디지털 자산 여부
+        - currency.wallet_state(string) : 지갑 상태
+        - currency.wallet_support(array[string]) : 해당 화폐가 지원하는 입출금 정보
+    - account : 사용자의 계좌 정보
+        - account.currency(string) : 화폐 코드(영문대문자)
+        - account.balance(numstring) : 주문가능 금액/수량
+        - account.locked(numstring) : 주문중 묶여있는 금액/수량
+        - account.avg_buy_price(numstring) : 매수평균가
+        - account.avg_buy_price_modified(bool) : 매수평균가 수정여부
+        - account.unit_currency(string) : 화폐 단위
+    - withdraw_limit : 출금 제약사항
+        - withdraw_limit.currency(string) : 화폐 코드(영문대문자)
+        - withdraw_limit.minimum(numstring) : 출금 최소 금액/수량
+        - withdraw_limit.onetime(numstring) : 1회 출금 한도
+        - withdraw_limit.daily(numstring) : 1일 출금 한도
+        - withdraw_limit.remaining_daily(numstring) : 1일 출금 잔여 한도
+        - withdraw_limit.fixed(numstring) : 고정 출금 수수료
+        - withdraw_limit.can_withdraw(bool) : 출금 가능 여부
+        - withdraw_limit.remaining_daily_krw(numstring) : 1일 출금 잔여 한도(KRW 환산)
+- response Example
+```json
+{
+  "member_level": {
+    "security_level": null,
+    "fee_level": null,
+    "email_verified": null,
+    "identity_auth_verified": null,
+    "bank_account_verified": null,
+    "two_factor_auth_verified": null,
+    "locked": null,
+    "wallet_locked": null
+  },
+  "currency": {
+    "code": "BTC",
+    "withdraw_fee": "0.000108",
+    "is_coin": true,
+    "wallet_state": "working",
+    "wallet_support": [
+      "deposit",
+      "withdraw"
+    ]
+  },
+  "account": {
+    "currency": "BTC",
+    "balance": "124.45282908",
+    "locked": "0",
+    "avg_buy_price": "36341011",
+    "avg_buy_price_modified": false,
+    "unit_currency": "KRW"
+  },
+  "withdraw_limit": {
+    "currency": "BTC",
+    "onetime": "6.01",
+    "daily": "160",
+    "remaining_daily": "160.00000000",
+    "remaining_daily_fiat": null,
+    "fiat_currency": null,
+    "minimum": "0.0001",
+    "fixed": 8,
+    "withdraw_delayed_fiat": null,
+    "can_withdraw": true,
+    "remaining_daily_krw": null
+  }
+}
+```
+            
 
 ## 가상 자산 출금하기
+- Post : https://api.bithumb.com/v1/withdraws/coin
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 가상 자산 출금을 요청합니다.
+- request Parameters
+    - currency(string) : 화폐 코드(영문대문자), required
+    - net_type(string) : 출금 네트워크, required
+    - amount(numstring) : 출금 수량, required
+    - address(string) : 출금 가능 주소에 등록된 출금 주소, required
+    - secondary_address(string) : 2차 출금 주소(필요한 디지털 자산에 한해서)
+    - exchange_name(string) : 출금 거래소명(영문)
+    - receiver_type(string) : 수취인 개인/법인 여부, personal : 개인/corporate : 법인
+    - receiver_ko_name(string) : 수취인 국문명
+    - receiver_en_name(string) : 수취인 영문명
+    - receiver_corp_ko_name(string) : 수취인 법인 국문명(수취인 법인인 경우 필수)
+    - receiver_corp_en_name(string) : 수취인 법인 영문명(수취인 법인인 경우 필수)
+- Response
+    - type(string) : 입출금 유형
+    - uuid(string) : 출금 UUID
+    - currency(string) : 화폐 코드(영문대문자)
+    - net_type(string) : 출금 네트워크
+    - txid(string) : 출금 트랜잭션 ID
+    - state(string) : 출금 상태        
+    - created_at(DateString) : 출금 요청 시각
+    - done_at(DateString) : 출금 완료 시각
+    - amount(numstring) : 출금 수량
+    - fee(numstring) : 출금 수수료
+    - krw_amount(numstring) : 원화 환산 가격
+    - transaction_type(string, "일반출금") : 출금 유형
+- Response Example(201)
+```json
+{
+  "type": "withdraw",
+  "uuid": "200377211",
+  "currency": "BTC",
+  "net_type": "BTC",
+  "state": "processing",
+  "created_at": "2024-07-14T14:54:24+09:00",
+  "done_at": null,
+  "amount": "0.00010000",
+  "fee": "0",
+  "krw_amount": "8400",
+  "transaction_type": null,
+  "txid": null
+}
+```
+
+
+
 
 ## 원화 출금하기
+- Post : https://api.bithumb.com/v1/withdraws/krw
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 등록된 출금 계좌로 원화 출금을 요청합니다.
+- Request Parameters
+    - amount(numstring) : 출금 금액, required
+    - two_factor_type(string) : 2차 인증수단, "kakao" : 카카오인증, required
+- Response
+     - type(string) : 입출금 유형
+    - uuid(string) : 출금 UUID
+    - currency(string) : 화폐 코드(영문대문자)
+    - txid(string) : 출금 트랜잭션 ID
+    - state(string) : 출금 상태       
+    - created_at(DateString) : 출금 요청 시각
+    - done_at(DateString) : 출금 완료 시각
+    - amount(numstring) : 출금 금액
+    - fee(numstring) : 출금 수수료
+    - transaction_type(string, "일반출금") : 출금 유형
+        
+- response Example(201)
+```json
+{
+  "type": "withdraw",
+  "uuid": "12704033",
+  "currency": "KRW",
+  "net_type": null,
+  "txid": "1597452",
+  "state": "PROCESSING",
+  "created_at": "2024-07-14T15:05:20+09:00",
+  "done_at": null,
+  "amount": "6000",
+  "fee": "1000",
+  "transaction_type": "default"
+}
+```    
+
 
 ## 출금 허용 주소 리스트 조회
-
+- Get : https://api.bithumb.com/v1/withdraws/coin_addresses
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 등록된 출금 허용 주소(100만원 이상 출금 가능한 주소) 리스트를 조회합니다.
+- Response
+    - currency(string) : 화폐 코드(영문대문자)
+    - net_type(string) : 출금 네트워크
+    - network_name(string) : 출금 네트워크 이름
+    - withdraw_address(string) : 출금 가능 주소
+    - secondary_adress(string) : 2차 출금 주소(필요한 디지털 자산에 한해서)
+    - exchange_name(string) : 출금 거래소명(영문)
+    - owner_type(string) : 출금 소유주 고객 타입
+        - personal : 개인
+        - corporate : 법인
+    - owner_ko_name(string) : 출금 소유주 국문명
+    - owner_en_name(string) : 출금 소유주 영문명
+    - owner_corp_ko_name(string) : 출금 소유주 법인 국문명(소유주가 법인인 경우)
+    - owner_corp_en_name(string) : 출금 소유주 법인 영문명(소유주가 법인인 경우)
+- Response Example
+```json
+[
+  {
+    "currency": "ETH",
+    "net_type": "ETH",
+    "network_name": "Ethereum",
+    "withdraw_address": "0x569ece3d6cd807a31b1a2d85ebfee79f89fe0b87",
+    "secondary_address": null,
+    "exchange_name": "vv",
+    "owner_type": "personal",
+    "owner_ko_name": "홍길동",
+    "owner_en_name": null,
+    "owner_corp_ko_name": null,
+    "owner_corp_en_name": null
+  },
+  {
+    "currency": "ETH",
+    "net_type": "ETH",
+    "network_name": "Ethereum",
+    "withdraw_address": "0x562ece3d6cd807a31b1a5d85ebfee79f78fe0b26",
+    "secondary_address": null,
+    "exchange_name": "Binance",
+    "owner_type": "personal",
+    "owner_ko_name": null,
+    "owner_en_name": "GIL DONG HONG",
+    "owner_corp_ko_name": null,
+    "owner_corp_en_name": null
+  }
+]
+```     
 
 
 # 입금
 ## 코인 입금 리스트 조회
+- Get : https://api.bithumb.com/v1/deposits
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- Request Parameters
+    - currency(string) : 화폐 코드(영문대문자)
+    - state(string,"done") : 입금 상태
+        - 입금신청
+            - REQUESTED_PENDING : 입금대기
+            - REQUESTED_SYSTEM_REJECTED : 반환신청대기
+            - REQUESTED_PROCESSING : 입금신청대기
+            - REQUESTED_PROCESSING : 입금신사중
+            - REQUESTED_ADMIN_REJECTED : 입금심사반려
+        - 입금
+            - DEPOSIT_PROCESSING : 입금 대기
+            - DEPOSIT_ACCEPTED : 입금완료
+            - DEPOSIT_CANCELLED : 입금취소
+        - 반환신청
+            - REFUNDING_PENDING : 반환심사 대기
+            - REFUNDING_SYSTEM_REJECTED : 반환취소
+            - REFUNDING_PROCESSING : 반환 심사중
+            - REFUNDING_ADMIN_REJECTED : 반환취소
+            - REFUNDING_ACCEPTED : 반환완료
+        - 반환 신청 건 출금
+            - REFUNDED_PROCESSING : 반환승인
+            - REFUNDED_ACCEPTED : 반환완료
+            - REFUNDED_CANCELLED : 반환취소
+    - uuid(array) : 입금 UUID의 목록, optional
+    - txids(array) : 입금 트랜잭션 ID의 목록
+    - page(number,1) : 페이지 수, optional
+    - limit(number,100) : 개수 제한(기본 :100, 최대 100), optional
+    - order_by(string,"desc") : 정렬 방식, asc : 오름차순/desc : 내림차순, optional
+- Response
+    - type(string) : 입출금 종류
+    - uuid(string) : 입급에 대한 고유 아이디
+    - currency(string) : 화폐를 의미하는 영문 대문자 코드
+    - net_type(string) : 입금 네트워크 
+    - txid(string) : 입금의 트랙잭션 아이디
+    - state(string) : 입금 상태
+        - 입금 신청
+            - REQUESTED_PENDING : 입금대기
+            - REQUESTED_SYSTEM_REJECTED : 반환신청대기
+            - REQUESTED_PROCESSING : 입금신청대기
+            - REQUESTED_PROCESSING : 입금신사중
+            - REQUESTED_ADMIN_REJECTED : 입금심사반려
+        - 입금
+            - DEPOSIT_PROCESSING : 입금 대기
+            - DEPOSIT_ACCEPTED : 입금완료
+            - DEPOSIT_CANCELLED : 입금취소
+        - 반환신청
+            - REFUNDING_PENDING : 반환심사 대기
+            - REFUNDING_SYSTEM_REJECTED : 반환취소
+            - REFUNDING_PROCESSING : 반환 심사중
+            - REFUNDING_ADMIN_REJECTED : 반환취소
+            - REFUNDING_ACCEPTED : 반환완료
+        - 반환 신청 건 출금
+            - REFUNDED_PROCESSING : 반환승인
+            - REFUNDED_ACCEPTED : 반환완료
+            - REFUNDED_CANCELLED : 반환취소 
+    - created_at(DateString) : 입금 생성시간
+    - done_at(DateString) : 입금 완료 시간 
+    - amount(numstring) :  입금 수량
+    - fee(numstring) : 입금 수수료
+    - transaction_type(string, "일반출금") : 입금 유형
+- Response Example
+```json
+[
+  {
+    "type": "deposit",
+    "uuid": "202620152",
+    "currency": "SHIB",
+    "net_type": null,
+    "txid": "20240709163030.72335",
+    "state": "DEPOSIT_ACCEPTED",
+    "created_at": "2024-07-09T16:31:08+09:00",
+    "done_at": "2024-07-09T16:31:08+09:00",
+    "amount": "100000",
+    "fee": "0",
+    "transaction_type": null
+  },
+  {
+    "type": "deposit",
+    "uuid": "202611907",
+    "currency": "SANTOS",
+    "net_type": null,
+    "txid": "20240701005602.90593",
+    "state": "DEPOSIT_ACCEPTED",
+    "created_at": "2024-07-01T00:56:23+09:00",
+    "done_at": "2024-07-01T00:56:23+09:00",
+    "amount": "1000000",
+    "fee": "0",
+    "transaction_type": null
+  }
+]
+```
+
 
 ## 원화 입금 리스트 조회
+- Get : https://api.bithumb.com/v1/deposits/krw
+- Header
+    - Authorization(JWT) : Bearer {access_token}
+- 원화 입금 목록을 조회합니다.
+- Request Parameters
+    - state(string) : 입금상태
+        - PROCESSING : 진행중
+        -  ACCEPTED : 완료
+         - CANCELED : 취소됨
+    - uuids(array) : 입금 uuid의 목록
+    - txids(array) :  입금 txid의 목록
+    - page(number,1) : 페이지 수
+    - limit(number,100) : 개수 제한(기본 :100, 최대 100)
+    - order_by(string,"desc") : 정렬 방식, asc : 오름차순/desc : 내림차순
+- Response
+    - 
 
 ## 개별 입금 조회
 
