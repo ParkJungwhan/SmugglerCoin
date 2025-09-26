@@ -1,6 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Quartz;
+using SmugglerCoin.Helpers;
+using SmugglerCoin.Jobs;
+using SmugglerCoin.Models;
+using SmugglerCoin.UpbitModels;
 
 public class Program
 {
@@ -34,33 +39,46 @@ public class Program
             })
             .ConfigureServices((context, services) =>
             {
+                // key 파일확인
+                var reader = new ApiKeyReader("SecretConfig.json");
+
+                services.Configure<ApiKeyOptions>("Upbit", options =>
+                {
+                    var upbitKeys = reader.GetKeys("upbit");
+                    options.AccessKey = upbitKeys.accessKey;
+                    options.SecretKey = upbitKeys.secretKey;
+                });
+
+                services.AddSingleton<IAPICall, UpbitAPICaller>();
+
                 // appsettings.json Setting
                 //                services.Configure<MySettings>(context.Configuration.GetSection(nameof(MySettings)));
-#if DEBUG
-                //                services.AddQuartz(q =>
-                //                {
-                //                    q.UseMicrosoftDependencyInjectionJobFactory();
-                //                    JobKey jobKey = new(nameof(DefaultJob));
-                //                    q.AddJob<DefaultJob>(j => j.WithIdentity(jobKey));
-                //                    q.AddTrigger(t => t
-                //                        .ForJob(jobKey)
-                //                        .WithIdentity($"{nameof(DefaultJob)}_1")
-                //                        .WithCronSchedule("0/10 * * * * ?")); // 10초마다 동작
-                //                    q.AddTrigger(t => t
-                //                        .ForJob(jobKey)
-                //                        .WithIdentity($"{nameof(DefaultJob)}_1")
-                //                        .WithCronSchedule("0/3 * 0-9 * * ?")); // 0시 ~ 9시 사이에 2초마다 동작
-                //                    q.AddTrigger(t => t
-                //                        .ForJob(jobKey)
-                //                        .WithIdentity($"{nameof(DefaultJob)}_2")
-                //                        .WithCronSchedule("0/3 * 12-13 * * ?")); // 12시 ~ 13시 사이에 2초마다 동작
-                //                    q.AddTrigger(t => t
-                //                        .ForJob(jobKey)
-                //                        .WithIdentity($"{nameof(DefaultJob)}_3")
-                //                        .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
-                //                });
 
-                services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+                // complete 될때가지 대기할꺼야?
+                bool isWatingForComplete = false;
+#if DEBUG
+                services.AddQuartz(q =>
+                {
+                    JobKey jobKey = new(nameof(DefaultJob));
+                    q.AddJob<DefaultJob>(j => j.WithIdentity(jobKey));
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(DefaultJob)}_1")
+                        .WithCronSchedule("0/10 * * * * ?")); // 10초마다 동작
+                    //q.AddTrigger(t => t
+                    //    .ForJob(jobKey)
+                    //    .WithIdentity($"{nameof(DefaultJob)}_1")
+                    //    .WithCronSchedule("0/3 * 0-9 * * ?")); // 0시 ~ 9시 사이에 2초마다 동작
+                    //q.AddTrigger(t => t
+                    //    .ForJob(jobKey)
+                    //    .WithIdentity($"{nameof(DefaultJob)}_2")
+                    //    .WithCronSchedule("0/3 * 12-13 * * ?")); // 12시 ~ 13시 사이에 2초마다 동작
+                    //q.AddTrigger(t => t
+                    //    .ForJob(jobKey)
+                    //    .WithIdentity($"{nameof(DefaultJob)}_3")
+                    //    .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
+                });
+
 #elif !DEBUG
 
                 //services.AddQuartz(q =>
@@ -81,8 +99,10 @@ public class Program
                 //        .WithIdentity($"{nameof(DefaultJob)}_3")
                 //        .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
                 //});
-                //services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 #endif
+                // 시작
+                services.AddQuartzHostedService(q => q.WaitForJobsToComplete = isWatingForComplete);
+
                 // Add My EF Core DbContext
                 //services.AddDbContext<MyContext>(options => options.UseSqlServer(context.Configuration.GetConnectionString("MyDataBase")));
 

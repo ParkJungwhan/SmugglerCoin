@@ -8,4 +8,10 @@
 
         void SetAuthentication(string key, string secret);
     }
+
+    public class ApiKeyOptions
+    {
+        public string AccessKey { get; set; }
+        public string SecretKey { get; set; }
+    }
 }
