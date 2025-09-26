@@ -1,15 +1,4 @@
-using System.Security.Claims;
-using System.Text;
 using RestSharp;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-
-using System.Security.Claims;
-using System.Text;
-
-using Microsoft.IdentityModel.Tokens;
-using System.Net.Http;
-using System.Threading.Tasks;
 using SmugglerCoin.UpbitModels;
 
 namespace BithumbAPI_Test
@@ -28,25 +17,11 @@ namespace BithumbAPI_Test
             Console.WriteLine("{0}", response.Content);
         }
 
-        //[Fact]
-        //public async Task HttpClientTest()
-        //{
-        //    var client = new HttpClient();
-        //    var request = new HttpRequestMessage(HttpMethod.Get, "https://api.upbit.com/v1/api_keys");
-        //    request.Headers.Add("Authorization", "");
-        //    var response = await client.SendAsync(request);
-        //    response.EnsureSuccessStatusCode();
-        //    Console.WriteLine(await response.Content.ReadAsStringAsync());
-        //}
-
         [Fact]
         public async Task TestAuth()
         {
             var accessKey = "내_ACCESS_KEY";
             var secretKey = "내_SECRET_KEY"; // 업비트 발급 Secret
-
-            accessKey = "tMvxgoeYeanibPM6swF7VHb977pCTeisWzJrfjyO";
-            secretKey = "wKTQTqeCVcEYSWFr620efhYGsXqMMRy1XHsmCotq";
 
             string jwt = string.Empty;
 
