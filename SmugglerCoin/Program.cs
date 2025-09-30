@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Reflection.PortableExecutable;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Quartz;
@@ -49,14 +50,25 @@ public class Program
                     options.SecretKey = upbitKeys.secretKey;
                 });
 
-                services.AddSingleton<IAPICall, UpbitAPICaller>();
+                //services.AddSingleton<IAPICall, UpbitAPICaller>();
+                services.AddSingleton<IAPICall>(provider =>
+                {
+                    //var reader = provider.GetRequiredService<ApiKeyOptions>();
+                    //ApiKeyOptions reader = provider.GetService<ApiKeyOptions>();
+
+                    var apiCaller = new UpbitAPICaller(reader);
+                    apiCaller.SetInitAPI();
+
+                    return apiCaller;
+                });
 
                 // appsettings.json Setting
-                //                services.Configure<MySettings>(context.Configuration.GetSection(nameof(MySettings)));
+                //   services.Configure<MySettings>(context.Configuration.GetSection(nameof(MySettings)));
 
                 // complete 될때가지 대기할꺼야?
-                bool isWatingForComplete = false;
+                bool isWatingForComplete = false;   // no
 #if DEBUG
+
                 services.AddQuartz(q =>
                 {
                     JobKey jobKey = new(nameof(DefaultJob));
