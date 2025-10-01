@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C8D5274F-A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmugglerCoin", "SmugglerCoin\SmugglerCoin.csproj", "{5D2D179C-0A8D-3087-2CA1-9BE6F3CE5E3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BithumbAPI_Test", "BithumbAPI_Test\BithumbAPI_Test.csproj", "{AE250F04-F0FB-415B-801D-64029046D55F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoinAPI_Test", "CoinAPI_Test\CoinAPI_Test.csproj", "{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,16 +19,16 @@ Global
 		{5D2D179C-0A8D-3087-2CA1-9BE6F3CE5E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D2D179C-0A8D-3087-2CA1-9BE6F3CE5E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D2D179C-0A8D-3087-2CA1-9BE6F3CE5E3B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE250F04-F0FB-415B-801D-64029046D55F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE250F04-F0FB-415B-801D-64029046D55F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE250F04-F0FB-415B-801D-64029046D55F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE250F04-F0FB-415B-801D-64029046D55F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{AE250F04-F0FB-415B-801D-64029046D55F} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
+		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C786C85D-D19C-4A28-AD17-47D5C569A3B2}

@@ -17,8 +17,8 @@ namespace SmugglerCoin.UpbitModels
             // auth key
             var upbitKeys = keys.GetKeys("upbit");
 
-            Debug.Assert(string.IsNullOrEmpty(upbitKeys.accessKey));
-            Debug.Assert(string.IsNullOrEmpty(upbitKeys.secretKey));
+            Debug.Assert(false == string.IsNullOrEmpty(upbitKeys.accessKey));
+            Debug.Assert(false == string.IsNullOrEmpty(upbitKeys.secretKey));
             _accessKey = upbitKeys.accessKey;
             _secretKey = upbitKeys.secretKey;
 

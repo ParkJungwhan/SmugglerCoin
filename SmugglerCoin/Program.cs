@@ -1,5 +1,4 @@
-﻿using System.Reflection.PortableExecutable;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Quartz;
@@ -50,12 +49,8 @@ public class Program
                     options.SecretKey = upbitKeys.secretKey;
                 });
 
-                //services.AddSingleton<IAPICall, UpbitAPICaller>();
                 services.AddSingleton<IAPICall>(provider =>
                 {
-                    //var reader = provider.GetRequiredService<ApiKeyOptions>();
-                    //ApiKeyOptions reader = provider.GetService<ApiKeyOptions>();
-
                     var apiCaller = new UpbitAPICaller(reader);
                     apiCaller.SetInitAPI();
 
@@ -68,6 +63,8 @@ public class Program
                 // complete 될때가지 대기할꺼야?
                 bool isWatingForComplete = false;   // no
 #if DEBUG
+
+                services.AddTransient<DefaultJob>();
 
                 services.AddQuartz(q =>
                 {
