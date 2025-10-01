@@ -65,6 +65,26 @@ public class UpbitAPICallerTests
         await Task.WhenAll(first, second);
     }
 
+    [Fact]
+    public async Task SetLimitCallCount_respects_group_specific_limits()
+    {
+        var handler = new RecordingHandler();
+        var caller = new UpbitAPICaller(handler.CreateClient());
+
+        caller.SetLimitCallCount(UpbitAPICaller.DefaultLimitGroup, 1, TimeSpan.FromMilliseconds(100));
+        caller.SetLimitCallCount(UpbitAPICaller.MarketLimitGroup, 2, TimeSpan.FromMilliseconds(100));
+
+        var firstDefault = caller.SendAsync(HttpMethod.Get, "v1/default");
+        var secondDefault = caller.SendAsync(HttpMethod.Get, "v1/default");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => caller.SendAsync(HttpMethod.Get, "v1/default"));
+        await Task.WhenAll(firstDefault, secondDefault);
+
+        var firstMarket = caller.SendAsync(HttpMethod.Get, "v1/market", rateLimitGroup: UpbitAPICaller.MarketLimitGroup);
+        var secondMarket = caller.SendAsync(HttpMethod.Get, "v1/market", rateLimitGroup: UpbitAPICaller.MarketLimitGroup);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => caller.SendAsync(HttpMethod.Get, "v1/market", rateLimitGroup: UpbitAPICaller.MarketLimitGroup));
+        await Task.WhenAll(firstMarket, secondMarket);
+    }
+
     private sealed class RecordingHandler : HttpMessageHandler
     {
         private readonly Func<HttpResponseMessage> _responseFactory;

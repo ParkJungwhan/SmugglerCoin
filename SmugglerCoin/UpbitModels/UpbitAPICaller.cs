@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -9,13 +10,17 @@ namespace SmugglerCoin.UpbitModels
 {
     public class UpbitAPICaller : IAPICall, IDisposable
     {
+        public const string DefaultLimitGroup = "default";
+        public const string MarketLimitGroup = "market";
+
         private const string DefaultBaseUrl = "https://api.upbit.com/";
 
         private readonly HttpClient _client;
         private readonly bool _ownsClient;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly Dictionary<string, RateLimiter> _rateLimiters = new(StringComparer.OrdinalIgnoreCase);
+        private readonly object _rateLimiterLock = new();
 
-        private RateLimiter? _rateLimiter;
         private string? _accessKey;
         private string? _secretKey;
         private bool _disposed;
@@ -64,10 +69,20 @@ namespace SmugglerCoin.UpbitModels
 
         public void SetLimitCallCount(int limit)
         {
-            SetLimitCallCount(limit, TimeSpan.FromSeconds(1));
+            SetLimitCallCount(DefaultLimitGroup, limit, TimeSpan.FromSeconds(1));
         }
 
         public void SetLimitCallCount(int limit, TimeSpan window)
+        {
+            SetLimitCallCount(DefaultLimitGroup, limit, window);
+        }
+
+        public void SetLimitCallCount(string group, int limit)
+        {
+            SetLimitCallCount(group, limit, TimeSpan.FromSeconds(1));
+        }
+
+        public void SetLimitCallCount(string group, int limit, TimeSpan window)
         {
             ThrowIfDisposed();
 
@@ -76,22 +91,46 @@ namespace SmugglerCoin.UpbitModels
                 throw new ArgumentOutOfRangeException(nameof(window), "Window must be greater than zero.");
             }
 
-            _rateLimiter?.Dispose();
+            var normalizedGroup = ResolveGroupName(group);
+            RateLimiter? limiterToDispose = null;
+            FixedWindowRateLimiter? newLimiter = null;
+            var removeOnly = limit <= 0;
 
-            if (limit <= 0)
+            if (!removeOnly)
             {
-                _rateLimiter = null;
-                return;
+                newLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = limit,
+                    Window = window,
+                    AutoReplenishment = true,
+                    QueueLimit = limit,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
             }
 
-            _rateLimiter = new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+            lock (_rateLimiterLock)
             {
-                PermitLimit = limit,
-                Window = window,
-                AutoReplenishment = true,
-                QueueLimit = limit,
-                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-            });
+                if (removeOnly)
+                {
+                    _rateLimiters.Remove(normalizedGroup, out limiterToDispose);
+                }
+                else if (_rateLimiters.TryGetValue(normalizedGroup, out limiterToDispose))
+                {
+                    _rateLimiters[normalizedGroup] = newLimiter!;
+                }
+                else
+                {
+                    _rateLimiters.Add(normalizedGroup, newLimiter!);
+                    limiterToDispose = null;
+                }
+            }
+
+            limiterToDispose?.Dispose();
+
+            if (removeOnly)
+            {
+                return;
+            }
         }
 
         public void SetAuthentication(string key, string secret)
@@ -117,6 +156,7 @@ namespace SmugglerCoin.UpbitModels
             string path,
             IDictionary<string, string?>? query = null,
             object? body = null,
+            string? rateLimitGroup = null,
             CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
@@ -127,7 +167,8 @@ namespace SmugglerCoin.UpbitModels
                 throw new ArgumentException("Request path is required.", nameof(path));
             }
 
-            using var lease = await AcquirePermitAsync(cancellationToken).ConfigureAwait(false);
+            var normalizedGroup = ResolveGroupName(rateLimitGroup);
+            using var lease = await AcquirePermitAsync(normalizedGroup, cancellationToken).ConfigureAwait(false);
 
             var requestUri = BuildRequestUri(path, query);
             using var request = new HttpRequestMessage(method, requestUri);
@@ -154,9 +195,10 @@ namespace SmugglerCoin.UpbitModels
             string path,
             IDictionary<string, string?>? query = null,
             object? body = null,
+            string? rateLimitGroup = null,
             CancellationToken cancellationToken = default)
         {
-            using var response = await SendAsync(method, path, query, body, cancellationToken).ConfigureAwait(false);
+            using var response = await SendAsync(method, path, query, body, rateLimitGroup, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             if (response.Content is null)
@@ -176,14 +218,20 @@ namespace SmugglerCoin.UpbitModels
             return await response.Content.ReadFromJsonAsync<TResponse>(_jsonOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<RateLimitLease> AcquirePermitAsync(CancellationToken cancellationToken)
+        private async Task<RateLimitLease> AcquirePermitAsync(string group, CancellationToken cancellationToken)
         {
-            if (_rateLimiter is null)
+            RateLimiter? limiter;
+            lock (_rateLimiterLock)
+            {
+                _rateLimiters.TryGetValue(group, out limiter);
+            }
+
+            if (limiter is null)
             {
                 return NoopLease.Shared;
             }
 
-            var lease = await _rateLimiter.AcquireAsync(1, cancellationToken).ConfigureAwait(false);
+            var lease = await limiter.AcquireAsync(1, cancellationToken).ConfigureAwait(false);
             if (!lease.IsAcquired)
             {
                 lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter);
@@ -261,6 +309,13 @@ namespace SmugglerCoin.UpbitModels
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
         }
 
+        private static string ResolveGroupName(string? group)
+        {
+            return string.IsNullOrWhiteSpace(group)
+                ? DefaultLimitGroup
+                : group.Trim();
+        }
+
         private void ThrowIfDisposed()
         {
             if (_disposed)
@@ -275,7 +330,24 @@ namespace SmugglerCoin.UpbitModels
             {
                 if (disposing)
                 {
-                    _rateLimiter?.Dispose();
+                    List<RateLimiter>? limitersToDispose = null;
+                    lock (_rateLimiterLock)
+                    {
+                        if (_rateLimiters.Count > 0)
+                        {
+                            limitersToDispose = new List<RateLimiter>(_rateLimiters.Values);
+                            _rateLimiters.Clear();
+                        }
+                    }
+
+                    if (limitersToDispose is not null)
+                    {
+                        foreach (var limiter in limitersToDispose)
+                        {
+                            limiter.Dispose();
+                        }
+                    }
+
                     if (_ownsClient)
                     {
                         _client.Dispose();
@@ -306,10 +378,9 @@ namespace SmugglerCoin.UpbitModels
                 return false;
             }
 
-            protected override void Dispose(bool disposing)
-            {
-                // nothing to release
-            }
+            //public override void Dispose()
+            //{
+            //}
         }
     }
 }
