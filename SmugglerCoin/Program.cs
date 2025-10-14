@@ -28,17 +28,27 @@ public class Program
                 /// 여기에 quartz 스케쥴러를 추가한다.
                 /// 등록되는 스케줄러들은 주기적으로 코인들의 캔들을 조회하는 방식으로 진행
                 configuration.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+
+                string appsettingname = "appsettings.develop.json";
 #if DEBUG
-                configuration.AddJsonFile("appsettings.develop.json", optional: true, reloadOnChange: true);
-#elif !DEBUG
-                    configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                appsettingname = "appsettings.json";
 #endif
+                //#if DEBUG
+                //                configuration.AddJsonFile("appsettings.develop.json", optional: true, reloadOnChange: true);
+                //#elif !DEBUG
+                //                    configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                //#endif
+                configuration.AddJsonFile(appsettingname, optional: true, reloadOnChange: true);
+
                 //IConfigurationRoot configurationRoot = configuration.Build();
                 //MySettings setting = new();
                 //configurationRoot.GetSection(nameof(MySettings)).Bind(setting);
             })
             .ConfigureServices((context, services) =>
             {
+                //var settingsss = context.Configuration.GetSection("AppSettings");
+                //var appname = settingsss["AppName"];
+
                 // key 파일확인
                 var reader = new ApiKeyReader("SecretConfig.json");
 
@@ -64,30 +74,31 @@ public class Program
                 bool isWatingForComplete = false;   // no
 #if DEBUG
 
-                services.AddTransient<DefaultJob>();
+                //services.AddTransient<DefaultJob>();
+                services.AddTransient<TestJob>();
 
                 services.AddQuartz(q =>
                 {
-                    JobKey jobKey = new(nameof(DefaultJob));
-                    q.AddJob<DefaultJob>(j => j.WithIdentity(jobKey));
+                    JobKey jobKey = new(nameof(TestJob));
+                    q.AddJob<TestJob>(j => j.WithIdentity(jobKey));
                     q.AddTrigger(t => t
                         .ForJob(jobKey)
-                        .WithIdentity($"{nameof(DefaultJob)}_1")
+                        .WithIdentity($"{nameof(TestJob)}_1")
                         .WithCronSchedule("0/10 * * * * ?")); // 10초마다 동작
-                    //q.AddTrigger(t => t
-                    //    .ForJob(jobKey)
-                    //    .WithIdentity($"{nameof(DefaultJob)}_1")
-                    //    .WithCronSchedule("0/3 * 0-9 * * ?")); // 0시 ~ 9시 사이에 2초마다 동작
-                    //q.AddTrigger(t => t
-                    //    .ForJob(jobKey)
-                    //    .WithIdentity($"{nameof(DefaultJob)}_2")
-                    //    .WithCronSchedule("0/3 * 12-13 * * ?")); // 12시 ~ 13시 사이에 2초마다 동작
-                    //q.AddTrigger(t => t
-                    //    .ForJob(jobKey)
-                    //    .WithIdentity($"{nameof(DefaultJob)}_3")
-                    //    .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(TestJob)}_1")
+                        .WithCronSchedule("0 * * * * ?")); // 매분 마다 동작
+                                                           //.WithCronSchedule("0/3 * 0-9 * * ?")); // 0시 ~ 9시 사이에 2초마다 동작
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(TestJob)}_2")
+                        .WithCronSchedule("0/3 * 12-13 * * ?")); // 12시 ~ 13시 사이에 2초마다 동작
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(TestJob)}_3")
+                        .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
                 });
-
 #elif !DEBUG
 
                 //services.AddQuartz(q =>

@@ -10,11 +10,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.develop.json" />
+    <None Remove="appsettings.json" />
     <None Remove="MasterDB.db" />
     <None Remove="SecretConfig.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="appsettings.develop.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="MasterDB.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
