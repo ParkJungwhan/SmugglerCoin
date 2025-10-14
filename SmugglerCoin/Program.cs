@@ -68,15 +68,13 @@ public class Program
                     return apiCaller;
                 });
 #endif
-
                 // appsettings.json Setting
                 //   services.Configure<MySettings>(context.Configuration.GetSection(nameof(MySettings)));
 
-                // complete 될때가지 대기할꺼야?
+                // 잡이 complete 될때가지 대기할꺼야?
                 bool isWatingForComplete = false;   // no
 #if DEBUG
 
-                //services.AddTransient<DefaultJob>();
                 services.AddTransient<TestJob>();
 
                 services.AddQuartz(q =>
@@ -86,42 +84,42 @@ public class Program
                     q.AddTrigger(t => t
                         .ForJob(jobKey)
                         .WithIdentity($"{nameof(TestJob)}_1")
-                        .WithCronSchedule("0/5 * * * * ?"));   // 매10초마다 동작
+                        .WithCronSchedule("0/5 * * * * ?"));        // 매 10초마다 동작
                     q.AddTrigger(t => t
                         .ForJob(jobKey)
                         .WithIdentity($"{nameof(TestJob)}_2")
-                        .WithCronSchedule("0/13 * * * * ?"));      // 매분 마다 동작
+                        .WithCronSchedule("0/13 * * * * ?"));       // 매 분 마다 동작
                     q.AddTrigger(t => t
                         .ForJob(jobKey)
                         .WithIdentity($"{nameof(TestJob)}_3")
-                        .WithCronSchedule("0/35 * * * * ?")); // 매 35초
+                        .WithCronSchedule("0/35 * * * * ?"));       // 매 35초
                     //q.AddTrigger(t => t
                     //    .ForJob(jobKey)
                     //    .WithIdentity($"{nameof(TestJob)}_4")
                     //    .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
                 });
 #elif !DEBUG
-
-                //services.AddQuartz(q =>
-                //{
-                //    q.UseMicrosoftDependencyInjectionJobFactory();
-                //    JobKey jobKey = new(nameof(DefaultJob));
-                //    q.AddJob<DefaultJob>(j => j.WithIdentity(jobKey));
-                //    q.AddTrigger(t => t
-                //        .ForJob(jobKey)
-                //        .WithIdentity($"{nameof(DefaultJob)}_1")
-                //        .WithCronSchedule("0/3 * 0-9 * * ?")); // 0시 ~ 9시 사이에 2초마다 동작
-                //    q.AddTrigger(t => t
-                //        .ForJob(jobKey)
-                //        .WithIdentity($"{nameof(DefaultJob)}_2")
-                //        .WithCronSchedule("0/3 * 12-13 * * ?")); // 12시 ~ 13시 사이에 2초마다 동작
-                //    q.AddTrigger(t => t
-                //        .ForJob(jobKey)
-                //        .WithIdentity($"{nameof(DefaultJob)}_3")
-                //        .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
-                //});
+                services.AddTransient<DefaultJob>();
+                services.AddQuartz(q =>
+                {
+                    q.UseMicrosoftDependencyInjectionJobFactory();
+                    JobKey jobKey = new(nameof(DefaultJob));
+                    q.AddJob<DefaultJob>(j => j.WithIdentity(jobKey));
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(DefaultJob)}_1")
+                        .WithCronSchedule("0/3 * 0-9 * * ?")); // 0시 ~ 9시 사이에 2초마다 동작
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(DefaultJob)}_2")
+                        .WithCronSchedule("0/3 * 12-13 * * ?")); // 12시 ~ 13시 사이에 2초마다 동작
+                    q.AddTrigger(t => t
+                        .ForJob(jobKey)
+                        .WithIdentity($"{nameof(DefaultJob)}_3")
+                        .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
+                });
 #endif
-                // 시작
+                // 서비스에 등록된 잡들의 스케줄러 시작
                 services.AddQuartzHostedService(q => q.WaitForJobsToComplete = isWatingForComplete);
 
                 // Add My EF Core DbContext
