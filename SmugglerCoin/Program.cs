@@ -49,9 +49,10 @@ public class Program
                 //var settingsss = context.Configuration.GetSection("AppSettings");
                 //var appname = settingsss["AppName"];
 
-#if !DEBUG
                 // key 파일확인
                 var reader = new ApiKeyReader("SecretConfig.json");
+
+#if !DEBUG
 
                 services.Configure<ApiKeyOptions>("Upbit", options =>
                 {
@@ -60,6 +61,7 @@ public class Program
                     options.SecretKey = upbitKeys.secretKey;
                 });
 
+#endif
                 services.AddSingleton<IAPICall>(provider =>
                 {
                     var apiCaller = new UpbitAPICaller(reader);
@@ -67,7 +69,7 @@ public class Program
 
                     return apiCaller;
                 });
-#endif
+
                 // appsettings.json Setting
                 //   services.Configure<MySettings>(context.Configuration.GetSection(nameof(MySettings)));
 

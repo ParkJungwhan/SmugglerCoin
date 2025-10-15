@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Microsoft.Extensions.Options;
 using SmugglerCoin.Helpers;
 using SmugglerCoin.Models;
 
@@ -47,6 +46,17 @@ namespace SmugglerCoin.UpbitModels
             base.SetInitAPI();
 
             return true;
+        }
+
+        public override Task GetCallAPI(string method, Dictionary<string, string> dicParams)
+        {
+            // implementation needed
+
+            // 여기서는 호출되는 get api들을 관리하는 부분
+
+            var getjob = Client.GetAsync(method);
+
+            return Task.CompletedTask;
         }
     }
 }

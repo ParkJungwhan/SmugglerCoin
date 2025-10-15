@@ -12,4 +12,6 @@ public abstract class BaseAPICall : IAPICall
 
         return true;
     }
+
+    public abstract Task GetCallAPI(string method, Dictionary<string, string> dicParams);
 }
