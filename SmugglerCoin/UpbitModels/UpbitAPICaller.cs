@@ -50,11 +50,8 @@ namespace SmugglerCoin.UpbitModels
 
         public override Task GetCallAPI(string method, Dictionary<string, string> dicParams)
         {
-            // implementation needed
-
-            // 여기서는 호출되는 get api들을 관리하는 부분
-
-            var getjob = Client.GetAsync(method);
+            // TODO : 여기서는 get 으로 호출되는 일반 rest api 호출 부분을 구현한다.
+            // DicParam은 header의 내용을 query string으로 붙여서 호출하는 형태.
 
             return Task.CompletedTask;
         }
