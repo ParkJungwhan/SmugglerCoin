@@ -52,7 +52,7 @@ public class Program
                 // key 파일확인
                 var reader = new ApiKeyReader("SecretConfig.json");
 
-#if !DEBUG
+                //#if !DEBUG
 
                 services.Configure<ApiKeyOptions>("Upbit", options =>
                 {
@@ -61,7 +61,7 @@ public class Program
                     options.SecretKey = upbitKeys.secretKey;
                 });
 
-#endif
+                //#endif
                 services.AddSingleton<IAPICall>(provider =>
                 {
                     var apiCaller = new UpbitAPICaller(reader);
