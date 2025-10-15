@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmugglerCoin", "SmugglerCoi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoinAPI_Test", "CoinAPI_Test\CoinAPI_Test.csproj", "{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp_Test", "ConsoleApp_Test\ConsoleApp_Test.csproj", "{1D89B54C-C8F0-4535-8217-E69BF4A34E6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,12 +25,17 @@ Global
 		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D89B54C-C8F0-4535-8217-E69BF4A34E6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D89B54C-C8F0-4535-8217-E69BF4A34E6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D89B54C-C8F0-4535-8217-E69BF4A34E6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D89B54C-C8F0-4535-8217-E69BF4A34E6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1A64E7FF-D7A2-44A6-BE46-495D28BE3CFD} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
+		{1D89B54C-C8F0-4535-8217-E69BF4A34E6E} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C786C85D-D19C-4A28-AD17-47D5C569A3B2}

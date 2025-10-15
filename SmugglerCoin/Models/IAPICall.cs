@@ -5,7 +5,7 @@
         bool SetInitAPI();
 
         // 일반 조회
-        Task GetCallAPI(string method, Dictionary<string, string> dicParams);
+        Task GetCallAPI(string method, Dictionary<string, string>? dicParams);
 
         //Task PostCallAPI(string method, Dictionary<string, string> dicParams);
 
