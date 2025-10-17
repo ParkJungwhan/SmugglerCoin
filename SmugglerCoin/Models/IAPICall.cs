@@ -2,10 +2,10 @@
 {
     public interface IAPICall
     {
-        bool SetInitAPI();
+        //bool SetInitAPI(string baseUrl, ApiKeyOptions apikey);
 
         // 일반 조회
-        Task GetCallAPI(string method, Dictionary<string, string>? dicParams);
+        Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams);
 
         //Task PostCallAPI(string method, Dictionary<string, string> dicParams);
 
@@ -17,5 +17,11 @@
     {
         public string AccessKey { get; set; }
         public string SecretKey { get; set; }
+
+        public ApiKeyOptions((string accessKey, string secretKey) keys)
+        {
+            AccessKey = keys.accessKey;
+            SecretKey = keys.secretKey;
+        }
     }
 }

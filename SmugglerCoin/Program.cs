@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using SmugglerCoin.Helpers;
 using SmugglerCoin.Jobs;
 using SmugglerCoin.Models;
 using SmugglerCoin.UpbitModels;
+using SmugglerCoin.UpbitModels.Jobs;
 
 public class Program
 {
@@ -17,6 +19,10 @@ public class Program
 
     private static IHostBuilder CreateHostBuilder(string[] args)
     {
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+        ILogger logger = factory.CreateLogger("Program");
+        logger.LogInformation("Hello World! Logging is {Description}.", "fun");
+
         IHostBuilder rtnValue = Host.CreateDefaultBuilder(args)
             .UseConsoleLifetime()
             .ConfigureAppConfiguration((hostingContext, configuration) =>
@@ -50,22 +56,27 @@ public class Program
                 //var appname = settingsss["AppName"];
 
                 // key 파일확인
-                var reader = new ApiKeyReader("SecretConfig.json");
+                //var reader = new ApiKeyReader("SecretConfig.json");
+
+                services.AddSingleton<ApiKeyReader>();
 
                 //#if !DEBUG
 
-                services.Configure<ApiKeyOptions>("Upbit", options =>
-                {
-                    var upbitKeys = reader.GetKeys("upbit");
-                    options.AccessKey = upbitKeys.accessKey;
-                    options.SecretKey = upbitKeys.secretKey;
-                });
+                //services.Configure<ApiKeyOptions>("Upbit", options =>
+                //{
+                //    var upbitKeys = reader.GetKeys("upbit");
+                //    options.AccessKey = upbitKeys.accessKey;
+                //    options.SecretKey = upbitKeys.secretKey;
+                //});
+
+                services.AddSingleton<UpbitAPICaller>();
 
                 //#endif
                 services.AddSingleton<IAPICall>(provider =>
                 {
-                    var apiCaller = new UpbitAPICaller(reader);
-                    apiCaller.SetInitAPI();
+                    var apiCaller = provider.GetRequiredService<UpbitAPICaller>();
+                    //var apiCaller = new UpbitAPICaller(logger, reader);
+                    //apiCaller.SetInitAPI();
 
                     return apiCaller;
                 });
@@ -78,27 +89,33 @@ public class Program
 #if DEBUG
 
                 services.AddTransient<TestJob>();
+                //services.AddTransient<Job_Init>();
+                services.AddSingleton<Job_Init>();
 
                 services.AddQuartz(q =>
                 {
-                    JobKey jobKey = new(nameof(TestJob));
-                    q.AddJob<TestJob>(j => j.WithIdentity(jobKey));
+                    //                    JobKey jobKey = new(nameof(TestJob));
+                    var jobname = nameof(Job_Init);
+                    JobKey jobKey = new(nameof(Job_Init));
+                    //q.AddJob<TestJob>(j => j.WithIdentity(jobKey));
+                    q.AddJob<Job_Init>(j => j.WithIdentity(jobKey));
                     q.AddTrigger(t => t
                         .ForJob(jobKey)
-                        .WithIdentity($"{nameof(TestJob)}_1")
-                        .WithCronSchedule("0/5 * * * * ?"));        // 매 10초마다 동작
-                    q.AddTrigger(t => t
-                        .ForJob(jobKey)
-                        .WithIdentity($"{nameof(TestJob)}_2")
-                        .WithCronSchedule("0/13 * * * * ?"));       // 매 분 마다 동작
-                    q.AddTrigger(t => t
-                        .ForJob(jobKey)
-                        .WithIdentity($"{nameof(TestJob)}_3")
-                        .WithCronSchedule("0/35 * * * * ?"));       // 매 35초
-                    //q.AddTrigger(t => t
-                    //    .ForJob(jobKey)
-                    //    .WithIdentity($"{nameof(TestJob)}_4")
-                    //    .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
+                        .WithIdentity($"{jobname}_1")
+                        .WithCronSchedule("5 * * * * ?"));        // 매 10초마다 동작
+                                                                  //.WithCronSchedule("0/5 * * * * ?"));        // 매 10초마다 동작
+                                                                  //q.AddTrigger(t => t
+                                                                  //    .ForJob(jobKey)
+                                                                  //    .WithIdentity($"{jobname}_2")
+                                                                  //    .WithCronSchedule("0/13 * * * * ?"));       // 매 분 마다 동작
+                                                                  //q.AddTrigger(t => t
+                                                                  //    .ForJob(jobKey)
+                                                                  //    .WithIdentity($"{jobname}_3")
+                                                                  //    .WithCronSchedule("0/35 * * * * ?"));       // 매 35초
+                                                                  //q.AddTrigger(t => t
+                                                                  //    .ForJob(jobKey)
+                                                                  //    .WithIdentity($"{jobname}_4")
+                                                                  //    .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
                 });
 #elif !DEBUG
                 services.AddTransient<DefaultJob>();

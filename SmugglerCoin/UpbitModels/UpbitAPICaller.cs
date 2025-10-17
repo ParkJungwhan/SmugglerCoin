@@ -1,6 +1,5 @@
 using System.Diagnostics;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 using SmugglerCoin.Helpers;
 using SmugglerCoin.Models;
 
@@ -10,19 +9,22 @@ namespace SmugglerCoin.UpbitModels
     {
         private Dictionary<eGroupName, int> DicLimit = new Dictionary<eGroupName, int>();
 
-        public UpbitAPICaller(ApiKeyReader keys)
+        private ILogger<UpbitAPICaller> logger;
+
+        public UpbitAPICaller(ILogger<UpbitAPICaller> _logger, ApiKeyReader keys)
         {
-            Debug.Assert(keys != null);
+            Debug.Assert(_logger != null);
+            logger = _logger;
+
             // auth key
-            var upbitKeys = keys.GetKeys("upbit");
+            Debug.Assert(keys != null);
+            if (!keys.DicKeys.TryGetValue("upbit", out var upbitKeyOption))
+            {
+                logger.LogError("upbit API Key 모델이 없습니다");
+                new Exception("upbit API Key 모델이 없습니다");
+            }
 
-            Debug.Assert(false == string.IsNullOrEmpty(upbitKeys.accessKey));
-            Debug.Assert(false == string.IsNullOrEmpty(upbitKeys.secretKey));
-            _accessKey = upbitKeys.accessKey;
-            _secretKey = upbitKeys.secretKey;
-
-            // base url
-            BASE_URL = "https://api.upbit.com/v1/";
+            Debug.Assert(null != upbitKeyOption);
 
             // group setting
             DicLimit.Add(eGroupName.Market, 10);
@@ -40,35 +42,43 @@ namespace SmugglerCoin.UpbitModels
 
             DicLimit.Add(eGroupName.Websocket_connect, 5);
             DicLimit.Add(eGroupName.websocket_message, 5);  //�д� 100ȸ
+
+            if (false == SetInitAPI("https://api.upbit.com/v1/", upbitKeyOption))
+            {
+                new Exception("upbit 초기화 실패");
+            }
         }
 
-        public override bool SetInitAPI()
-        {
-            base.SetInitAPI();
-
-            return true;
-        }
-
-        public override async Task GetCallAPI(string method, Dictionary<string, string>? dicParams)
+        public override async Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(method);
             if (Client is null || Client.BaseAddress is null)
                 throw new InvalidOperationException("HTTP client is not initialized. Call SetInitAPI() before making requests.");
 
-            var response = await Client.GetAsync($"{BASE_URL}api_keys");
-            var content = await response.Content.ReadAsStringAsync();
+            SetHeader(method);
 
-            var result = Client.GetStringAsync(method)
-                .ContinueWith((task) =>
-                {
-                    if (task.IsFaulted)
-                    {
-                        Debug.WriteLine($"[Upbit] GET {method} failed: {task.Exception}");
-                        return;
-                    }
-                    var result = task.Result;
-                    Debug.WriteLine($"[Upbit] GET {method} success => {result}");
-                });
+            //var url = $"{BASE_URL}api_keys";
+            var url = $"{BASE_URL}{method}";
+
+            logger.LogDebug($"{DateTime.Now}\t[Upbit]\tGET : {url}");
+            var response = await Client.GetAsync(url);
+            //var response = await Client.GetAsync(method);
+            var content = await response.Content.ReadAsStringAsync();
+            return content;
+
+            //var result = Client.GetStringAsync(method)
+            //    .ContinueWith((task) =>
+            //    {
+            //        if (task.IsFaulted)
+            //        {
+            //            Debug.WriteLine($"[Upbit] GET {method} failed: {task.Exception}");
+            //            //return task;
+            //            return "";
+            //        }
+            //        var result = task.Result;
+            //        Debug.WriteLine($"[Upbit] GET {method} success => {result}");
+            //        return result;
+            //    });
 
             //Client.GetFromJsonAsync<List<UpbitMarket>>(method)
             //    .ContinueWith((task) =>

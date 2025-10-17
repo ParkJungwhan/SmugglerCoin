@@ -1,29 +1,41 @@
-﻿using SmugglerCoin.UpbitModels;
+﻿using System.Diagnostics;
+using SmugglerCoin.UpbitModels;
 
 namespace SmugglerCoin.Models;
 
 public abstract class BaseAPICall : IAPICall
 {
-    public string _accessKey;
-    public string _secretKey;
-    protected HttpClient Client;
-    protected string BASE_URL;
+    protected ApiKeyOptions APIKey { get; private set; }
+    protected string BASE_URL { get; private set; }
+    protected HttpClient Client { get; private set; }
 
-    public virtual bool SetInitAPI()
+    protected bool SetInitAPI(string baseUrl, ApiKeyOptions apikey)
     {
+        if (string.IsNullOrWhiteSpace(baseUrl)) return false;
+        if (null == apikey) return false;
+
+        BASE_URL = baseUrl;
+
         Client = new HttpClient();
-        Client.BaseAddress = new Uri(BASE_URL);
+        Client.BaseAddress = new Uri(baseUrl);
+
+        APIKey = apikey;
 
         return true;
     }
 
     protected void SetHeader(string method)
     {
-        var uri = new Uri($"{BASE_URL}{method}");
-        var jwt = UpbitJWTMaker.BuildToken(_accessKey, _secretKey, HttpMethod.Get, uri);
+        Debug.Assert(null != APIKey);
+        Debug.Assert(!string.IsNullOrWhiteSpace(APIKey.AccessKey));
+        Debug.Assert(!string.IsNullOrWhiteSpace(APIKey.SecretKey));
 
+        var uri = new Uri($"{BASE_URL}{method}");
+        var jwt = UpbitJWTMaker.BuildToken(APIKey.AccessKey, APIKey.SecretKey, HttpMethod.Get, uri);
+
+        Client.DefaultRequestHeaders.Clear();
         Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {jwt}");
     }
 
-    public abstract Task GetCallAPI(string method, Dictionary<string, string>? dicParams);
+    public abstract Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams);
 }
