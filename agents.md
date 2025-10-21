@@ -11,3 +11,5 @@
 # 지침
 - output은 한글로 출력
 - output을 할때마다 md파일로 일별로 로그파일을 만든다.
+- job list는 tasks.md 파일을 참조
+- 각 job 마다 정리용 md 로그 파일 생성
