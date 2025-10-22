@@ -13,3 +13,7 @@
 - output을 할때마다 md파일로 일별로 로그파일을 만든다.
 - job list는 tasks.md 파일을 참조
 - 각 job 마다 정리용 md 로그 파일 생성
+
+
+# codex
+- Session : 019a04c9-2714-7762-9ccb-b923d2329961
