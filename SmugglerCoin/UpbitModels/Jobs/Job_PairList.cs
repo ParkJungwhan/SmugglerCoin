@@ -5,14 +5,19 @@ using SmugglerCoin.Models;
 
 namespace SmugglerCoin.UpbitModels.Jobs;
 
-public class Job_Init : BaseJob
+public class PairList : BaseJob
 {
-    public Job_Init(IAPICall apicaller, ILogger<Job_Init> _logger) : base(apicaller, _logger)
+    private Dictionary<string, bool> DicParam;
+
+    public PairList(IAPICall apicaller, ILogger<PairList> _logger) : base(apicaller, _logger)
     {
+        DicParam = new Dictionary<string, bool>(1);
+        DicParam.Add("is_details", true);
     }
 
     public override async Task Execute(IJobExecutionContext context)
     {
+        //        DicParam
         var initjob = Apicaller.GetCallAPI("market/all", null);
         var result = initjob.Result;
 

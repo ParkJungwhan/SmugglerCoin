@@ -1,10 +1,13 @@
-﻿namespace SmugglerCoin.UpbitModels.Models;
+﻿//namespace SmugglerCoin.UpbitModels.Models;
 
-public class MarketAllModel
+namespace SmugglerCoin.UpbitModels.Models
 {
-    public string market { get; set; } = string.Empty;
-    public string korean_name { get; set; } = string.Empty;
-    public string english_name { get; set; } = string.Empty;
+    public class MarketAllModel
+    {
+        public string market { get; set; } = string.Empty;
+        public string korean_name { get; set; } = string.Empty;
+        public string english_name { get; set; } = string.Empty;
+    }
 }
 
 public class BaseCandle
@@ -50,7 +53,7 @@ public class CandleYears : BaseCandle
 {
 }
 
-public class TradeTicks
+public class TradeTicks         // 페어 체결 이력 조회
 {
     public DateTime trade_date_utc { get; set; }
     public DateTime trade_time_utc { get; set; }
@@ -65,7 +68,7 @@ public class TradeTicks
     public string ask_bid { get; set; }
 }
 
-public class PairCurrentTicks   // 페어 단위 현대가 조회
+public class PairCurrentTicks   // 페어 단위 현재가 조회
 {
     public string market { get; set; }
     public string trade_date { get; set; }

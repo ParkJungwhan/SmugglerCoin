@@ -1,4 +1,5 @@
-﻿using SmugglerCoin.BithumbModels;
+﻿using Microsoft.Extensions.Logging;
+using SmugglerCoin.BithumbModels;
 
 namespace SmugglerCoin.Models;
 
@@ -9,12 +10,21 @@ public class Smuggler
 
     public UserToken APITokens { get; set; }
 
+    public ILogger<Smuggler> logger;
+
     public Smuggler()
     {
+    }
+
+    public Smuggler(ILogger<Smuggler> logger)
+    {
+        this.logger = logger;
     }
 
     public void InitCoins()
     {
         // 여기서 코인의 모든 목록을 받아와서 초기화 한다
+
+        coins = new Dictionary<string, Coin>();
     }
 }

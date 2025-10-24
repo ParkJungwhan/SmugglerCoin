@@ -8,6 +8,7 @@ using SmugglerCoin.Jobs;
 using SmugglerCoin.Models;
 using SmugglerCoin.UpbitModels;
 using SmugglerCoin.UpbitModels.Jobs;
+using SmugglerCoin.UpbitModels.Models;
 
 public class Program
 {
@@ -86,9 +87,16 @@ public class Program
 
                 // 잡이 complete 될때가지 대기할꺼야?
                 bool isWatingForComplete = false;   // no
+
+                services.AddSingleton<Smuggler>();
+
+                services.AddSingleton<UpbitManager>();
+
 #if DEBUG
+                ////////////// Debug Mode
 
                 services.AddTransient<TestJob>();
+
                 //services.AddTransient<Job_Init>();
                 services.AddSingleton<Job_Init>();
 
@@ -118,6 +126,8 @@ public class Program
                                                                   //    .WithCronSchedule("0/3 * 19-20 * * ?")); // 19시 ~ 20시 사이에 2초마다 동작
                 });
 #elif !DEBUG
+                ////////////// Release Mode
+
                 services.AddTransient<DefaultJob>();
                 services.AddQuartz(q =>
                 {
