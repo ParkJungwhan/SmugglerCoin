@@ -53,44 +53,24 @@ public class Program
             })
             .ConfigureServices((context, services) =>
             {
-                //var settingsss = context.Configuration.GetSection("AppSettings");
-                //var appname = settingsss["AppName"];
-
-                // key 파일확인
-                //var reader = new ApiKeyReader("SecretConfig.json");
-
+                // configs
                 services.AddSingleton<ApiKeyReader>();
-
-                //#if !DEBUG
-
-                //services.Configure<ApiKeyOptions>("Upbit", options =>
-                //{
-                //    var upbitKeys = reader.GetKeys("upbit");
-                //    options.AccessKey = upbitKeys.accessKey;
-                //    options.SecretKey = upbitKeys.secretKey;
-                //});
-
                 services.AddSingleton<UpbitAPICaller>();
 
                 //#endif
                 services.AddSingleton<IAPICall>(provider =>
                 {
+                    // secretkey에 유효한 key가 있는 기준으로 upbit/bithumb/... 등을 구분하여 설정
                     var apiCaller = provider.GetRequiredService<UpbitAPICaller>();
-                    //var apiCaller = new UpbitAPICaller(logger, reader);
-                    //apiCaller.SetInitAPI();
-
                     return apiCaller;
                 });
 
-                // appsettings.json Setting
-                //   services.Configure<MySettings>(context.Configuration.GetSection(nameof(MySettings)));
+                // Model
+                services.AddSingleton<Smuggler>();
+                services.AddSingleton<UpbitManager>();
 
                 // 잡이 complete 될때가지 대기할꺼야?
                 bool isWatingForComplete = false;   // no
-
-                services.AddSingleton<Smuggler>();
-
-                services.AddSingleton<UpbitManager>();
 
 #if DEBUG
                 ////////////// Debug Mode
