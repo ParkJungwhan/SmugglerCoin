@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SmugglerCoin.Helpers;
@@ -49,7 +50,16 @@ namespace SmugglerCoin.UpbitModels
             }
         }
 
-        public override async Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams)
+        private void SetAuthHeader(string url)
+        {
+            string jwt = string.Empty;
+            var uri = new Uri(url);
+            jwt = UpbitJWTMaker.BuildToken(APIKey.AccessKey, APIKey.SecretKey, HttpMethod.Get, uri);
+            Client.DefaultRequestHeaders.Remove("Authorization");
+            Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {jwt}");
+        }
+
+        public override async Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams, bool isAuth = false)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(method);
             if (Client is null || Client.BaseAddress is null)
@@ -57,163 +67,15 @@ namespace SmugglerCoin.UpbitModels
 
             SetHeader(method);
 
-            //var url = $"{BASE_URL}api_keys";
             var url = $"{BASE_URL}{method}";
+
+            // 권한 설정(bearer)
+            if (isAuth) SetAuthHeader(url);
 
             logger.LogDebug($"{DateTime.Now}\t[Upbit]\tGET : {url}");
             var response = await Client.GetAsync(url);
-            //var response = await Client.GetAsync(method);
             var content = await response.Content.ReadAsStringAsync();
             return content;
-
-            //var result = Client.GetStringAsync(method)
-            //    .ContinueWith((task) =>
-            //    {
-            //        if (task.IsFaulted)
-            //        {
-            //            Debug.WriteLine($"[Upbit] GET {method} failed: {task.Exception}");
-            //            //return task;
-            //            return "";
-            //        }
-            //        var result = task.Result;
-            //        Debug.WriteLine($"[Upbit] GET {method} success => {result}");
-            //        return result;
-            //    });
-
-            //Client.GetFromJsonAsync<List<UpbitMarket>>(method)
-            //    .ContinueWith((task) =>
-            //    {
-            //        if (task.IsFaulted)
-            //        {
-            //            Debug.WriteLine($"[Upbit] GET market/all failed: {task.Exception}");
-            //            return;
-            //        }
-            //        var markets = task.Result;
-            //        if (markets != null)
-            //        {
-            //            foreach (var market in markets)
-            //            {
-            //                Debug.WriteLine($"[Upbit] Market: {market.Market}, Korean Name: {market.KoreanName}, English Name: {market.EnglishName}");
-            //            }
-            //        }
-            //    });
         }
-
-        //public override async Task GetCallAPI(string method, Dictionary<string, string>? dicParams)
-        //{
-        //    ArgumentException.ThrowIfNullOrWhiteSpace(method);
-
-        //    if (Client is null || Client.BaseAddress is null)
-        //        throw new InvalidOperationException("HTTP client is not initialized. Call SetInitAPI() before making requests.");
-
-        //    var requestUriBuilder = new UriBuilder(new Uri(Client.BaseAddress, method));
-        //    var headerParameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        //    List<string>? queryParts = null;
-        //    var useAuth = false;
-
-        //    if (dicParams is not null && dicParams.Count > 0)
-        //    {
-        //        foreach (var entry in dicParams)
-        //        {
-        //            if (string.IsNullOrWhiteSpace(entry.Key))
-        //                continue;
-
-        //            var key = entry.Key.Trim();
-        //            var value = entry.Value ?? string.Empty;
-
-        //            if (key.StartsWith("header:", StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                var headerName = key["header:".Length..].Trim();
-        //                if (!string.IsNullOrEmpty(headerName))
-        //                    headerParameters[headerName] = value;
-        //                continue;
-        //            }
-
-        //            if (key.StartsWith("query:", StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                var queryName = key["query:".Length..].Trim();
-        //                if (!string.IsNullOrEmpty(queryName))
-        //                {
-        //                    queryParts ??= new List<string>();
-        //                    queryParts.Add($"{Uri.EscapeDataString(queryName)}={Uri.EscapeDataString(value)}");
-        //                }
-        //                continue;
-        //            }
-
-        //            if (string.Equals(key, "Authorization", StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                headerParameters["Authorization"] = value;
-        //                continue;
-        //            }
-
-        //            if (string.Equals(key, "_useAuth", StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                useAuth = string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
-        //                continue;
-        //            }
-
-        //            queryParts ??= new List<string>();
-        //            queryParts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
-        //        }
-        //    }
-
-        //    if (queryParts is not null && queryParts.Count > 0)
-        //    {
-        //        var queryString = string.Join("&", queryParts);
-        //        if (string.IsNullOrWhiteSpace(requestUriBuilder.Query))
-        //        {
-        //            requestUriBuilder.Query = queryString;
-        //        }
-        //        else
-        //        {
-        //            var existing = requestUriBuilder.Query.TrimStart('?');
-        //            requestUriBuilder.Query = string.IsNullOrEmpty(existing) ? queryString : $"{existing}&{queryString}";
-        //        }
-        //    }
-
-        //    var requestUri = requestUriBuilder.Uri;
-        //    using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-        //    request.Headers.Accept.Clear();
-        //    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        //    if (headerParameters.TryGetValue("Authorization", out var authorizationValue))
-        //    {
-        //        if (string.Equals(authorizationValue, "auto", StringComparison.OrdinalIgnoreCase))
-        //            headerParameters["Authorization"] = $"Bearer {UpbitJWTMaker.BuildToken(_accessKey, _secretKey, HttpMethod.Get, requestUri)}";
-        //    }
-        //    else if (useAuth)
-        //    {
-        //        headerParameters["Authorization"] = $"Bearer {UpbitJWTMaker.BuildToken(_accessKey, _secretKey, HttpMethod.Get, requestUri)}";
-        //    }
-
-        //    foreach (var header in headerParameters)
-        //    {
-        //        if (string.IsNullOrWhiteSpace(header.Value))
-        //            continue;
-
-        //        request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-        //    }
-
-        //    try
-        //    {
-        //        var response = await Client.SendAsync(request).ConfigureAwait(false);
-        //        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            Debug.WriteLine($"[Upbit] GET {requestUri} failed: {(int)response.StatusCode} {response.ReasonPhrase} => {body}");
-        //            response.EnsureSuccessStatusCode();
-        //        }
-        //        else
-        //        {
-        //            Debug.WriteLine($"[Upbit] GET {requestUri} success => {body}");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine($"[Upbit] GET {method} threw exception: {ex}");
-        //        throw;
-        //    }
-        //}
     }
 }

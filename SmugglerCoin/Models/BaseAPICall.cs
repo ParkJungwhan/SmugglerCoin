@@ -37,5 +37,5 @@ public abstract class BaseAPICall : IAPICall
         Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {jwt}");
     }
 
-    public abstract Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams);
+    public abstract Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams, bool isAuth = false);
 }

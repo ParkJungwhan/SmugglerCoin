@@ -2,6 +2,7 @@
 using Quartz;
 using SmugglerCoin.Jobs;
 using SmugglerCoin.Models;
+using SmugglerCoin.UpbitModels.Models;
 
 namespace SmugglerCoin.UpbitModels.Jobs;
 
@@ -9,7 +10,7 @@ public class Job_Init : BaseJob
 {
     private const string ApiPath = "market/all";
 
-    public Job_Init(IAPICall apicaller, ILogger<Job_Init> _logger) : base(apicaller, _logger)
+    public Job_Init(IAPICall apicaller, ILogger<Job_Init> _logger, UpbitManager manager) : base(apicaller, _logger, manager)
     {
     }
 

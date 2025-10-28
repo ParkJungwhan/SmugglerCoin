@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Quartz;
 using SmugglerCoin.Models;
+using SmugglerCoin.UpbitModels.Models;
 
 namespace SmugglerCoin.Jobs;
 
@@ -9,11 +10,15 @@ public abstract class BaseJob : IJob
     public IAPICall Apicaller { get; }
 
     protected ILogger<BaseJob> SmuggerLog;
+    protected UpbitManager Manager;
 
-    public BaseJob(IAPICall apicaller, ILogger<BaseJob> _logger)
+    protected static int MaxRetryCount { get; private set; }
+
+    public BaseJob(IAPICall apicaller, ILogger<BaseJob> _logger, UpbitManager _manager)
     {
         Apicaller = apicaller;
         SmuggerLog = _logger;
+        Manager = _manager;
     }
 
     public virtual Task Execute(IJobExecutionContext context)

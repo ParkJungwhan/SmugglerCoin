@@ -2,6 +2,7 @@
 using Quartz;
 using SmugglerCoin.Jobs;
 using SmugglerCoin.Models;
+using SmugglerCoin.UpbitModels.Models;
 
 namespace SmugglerCoin.UpbitModels.Jobs;
 
@@ -9,7 +10,7 @@ public class PairList : BaseJob
 {
     private Dictionary<string, bool> DicParam;
 
-    public PairList(IAPICall apicaller, ILogger<PairList> _logger) : base(apicaller, _logger)
+    public PairList(IAPICall apicaller, ILogger<PairList> _logger, UpbitManager manager) : base(apicaller, _logger, manager)
     {
         DicParam = new Dictionary<string, bool>(1);
         DicParam.Add("is_details", true);
@@ -17,7 +18,6 @@ public class PairList : BaseJob
 
     public override async Task Execute(IJobExecutionContext context)
     {
-        //        DicParam
         var initjob = Apicaller.GetCallAPI("market/all", null);
         var result = initjob.Result;
 

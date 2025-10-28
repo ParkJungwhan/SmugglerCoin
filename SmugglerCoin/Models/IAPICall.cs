@@ -2,10 +2,8 @@
 {
     public interface IAPICall
     {
-        //bool SetInitAPI(string baseUrl, ApiKeyOptions apikey);
-
         // 일반 조회
-        Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams);
+        Task<string> GetCallAPI(string method, Dictionary<string, string>? dicParams, bool isAuth = false);
 
         //Task PostCallAPI(string method, Dictionary<string, string> dicParams);
 

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Quartz;
 using SmugglerCoin.Jobs;
 using SmugglerCoin.Models;
+using SmugglerCoin.UpbitModels.Models;
 
 namespace SmugglerCoin.UpbitModels.Jobs;
 
@@ -9,7 +10,7 @@ public class Job_APIKeys : BaseJob
 {
     private const string ApiPath = "api_keys";
 
-    public Job_APIKeys(IAPICall apicaller, ILogger<Job_APIKeys> logger) : base(apicaller, logger)
+    public Job_APIKeys(IAPICall apicaller, ILogger<Job_APIKeys> logger, UpbitManager manager) : base(apicaller, logger, manager)
     {
     }
 
