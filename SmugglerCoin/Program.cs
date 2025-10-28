@@ -94,11 +94,15 @@ public class Program
 
                 //services.AddTransient<Job_Init>();
                 services.AddSingleton<Job_Init>();
+                services.AddSingleton<Job_PairList>();
 
                 services.AddQuartz(q =>
                 {
                     var scheduleAction = CreateScheduler<Job_StatusWallet>("5 * * * * ?");
                     scheduleAction(q);
+
+                    var pairListSchedule = CreateScheduler<Job_PairList>("15 * * * * ?");
+                    pairListSchedule(q);
 
                     //                    JobKey jobKey = new(nameof(TestJob));
                     // var jobname = nameof(Job_Init);
