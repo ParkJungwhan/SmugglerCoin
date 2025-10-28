@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using SmugglerCoin.Jobs;
 using SmugglerCoin.Models;
@@ -6,22 +7,56 @@ using SmugglerCoin.UpbitModels.Models;
 
 namespace SmugglerCoin.UpbitModels.Jobs;
 
-public class PairList : BaseJob
+public class Job_PairList : BaseJob
 {
-    private Dictionary<string, bool> DicParam;
-
-    public PairList(IAPICall apicaller, ILogger<PairList> _logger, UpbitManager manager) : base(apicaller, _logger, manager)
+    private const string ApiPath = "market/all";
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        DicParam = new Dictionary<string, bool>(1);
-        DicParam.Add("is_details", true);
+        PropertyNameCaseInsensitive = true
+    };
+
+    public Job_PairList(IAPICall apicaller, ILogger<Job_PairList> logger, UpbitManager manager)
+        : base(apicaller, logger, manager)
+    {
     }
 
     public override async Task Execute(IJobExecutionContext context)
     {
-        var initjob = Apicaller.GetCallAPI("market/all", null);
-        var result = initjob.Result;
+        SmuggerLog.LogInformation($"{DateTime.Now}\t{context.Trigger.Key} || Job_PairList Execute() 시작");
 
-        // Upbit - 페어 목록 조회 : 결과값 반영
-        SmuggerLog.LogInformation($"{DateTime.Now}\t Job_Init Execute() : {result}");
+        try
+        {
+            var response = await Apicaller.GetCallAPI($"{ApiPath}?isDetails=true", null);
+            if (string.IsNullOrWhiteSpace(response))
+            {
+                SmuggerLog.LogWarning($"{DateTime.Now}\tJob_PairList 응답이 비어 있습니다.");
+                return;
+            }
+
+            List<MarketAllModel>? markets;
+            try
+            {
+                markets = JsonSerializer.Deserialize<List<MarketAllModel>>(response, JsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                SmuggerLog.LogError(ex, $"{DateTime.Now}\tJob_PairList 응답 파싱 실패");
+                return;
+            }
+
+            if (markets is null || markets.Count == 0)
+            {
+                SmuggerLog.LogWarning($"{DateTime.Now}\tJob_PairList 파싱 결과가 없습니다.");
+                return;
+            }
+
+            Manager.UpdateMarketPairs(markets);
+            SmuggerLog.LogInformation($"{DateTime.Now}\tJob_PairList 완료: 총 {markets.Count}개 마켓 갱신");
+        }
+        catch (Exception ex)
+        {
+            SmuggerLog.LogError(ex, $"{DateTime.Now}\tJob_PairList Execute() 실패");
+            throw;
+        }
     }
 }

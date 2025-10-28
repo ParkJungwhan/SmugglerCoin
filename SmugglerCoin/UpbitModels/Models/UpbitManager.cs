@@ -1,71 +1,88 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using SmugglerCoin.Models;
 
 namespace SmugglerCoin.UpbitModels.Models;
 
-public class UpbitManager   // singleton 보장은...?
+public class UpbitManager   // TODO: consider enforcing singleton semantics
 {
     public Dictionary<string, int> CurrentStatus;
-    public ILogger<UpbitManager> logger;
+    public ILogger<UpbitManager>? logger;
 
-    private const float Loop_Seconds = 10f;     //1ms 단위
+    private const float Loop_Seconds = 10f;     // TODO: verify intended interval
     private Smuggler PC;
-    private ConcurrentQueue<string> qWalletResult;
+    private readonly ConcurrentQueue<string> qWalletResult;
+    private readonly object _marketLock = new();
+    private List<MarketAllModel> _marketPairs = new();
 
     public UpbitManager()
     {
+        qWalletResult = new ConcurrentQueue<string>();
+        PC = new Smuggler();
         InitManager();
     }
 
-    public UpbitManager(ILogger<UpbitManager> _logger, Smuggler pc) : base()
+    public UpbitManager(ILogger<UpbitManager> logger, Smuggler pc)
     {
-        this.PC = pc;
-        this.logger = _logger;
-
+        qWalletResult = new ConcurrentQueue<string>();
+        PC = pc;
+        this.logger = logger;
         InitManager();
+    }
+
+    public IReadOnlyList<MarketAllModel> MarketPairs
+    {
+        get
+        {
+            lock (_marketLock)
+            {
+                return _marketPairs.ToList();
+            }
+        }
+    }
+
+    public void UpdateMarketPairs(IEnumerable<MarketAllModel> pairs)
+    {
+        ArgumentNullException.ThrowIfNull(pairs);
+
+        var snapshot = pairs as List<MarketAllModel> ?? pairs.ToList();
+        lock (_marketLock)
+        {
+            _marketPairs = snapshot;
+        }
+
+        logger?.LogInformation($"{DateTime.Now}\t[Set]MarketPairs Count: {_marketPairs.Count}");
     }
 
     private async Task InitManager()
     {
         CurrentStatus = new Dictionary<string, int>();
 
-        if (PC == null) PC = new Smuggler();
-        qWalletResult = new ConcurrentQueue<string>();
-
         var manager = new CoroutineManager();
-        logger.LogDebug("All Coroutines Started.");
+        logger?.LogDebug("All Coroutines Started.");
 
         while (true)
         {
             //manager.Start(async token => await PrintMessage("A", 10, 0.1f, token));
             //manager.Start(async token => await PrintMessage("B", 5, 0.2f, token));
-            manager.Start(async token => await ActionCoroutine(ProcessWalletStatus, token));    // 여기서 Action 추가하면서 진행해야할듯...?
+            manager.Start(async token => await ActionCoroutine(ProcessWalletStatus, token));    // TODO: append additional actions here
 
             await manager.RunAllAsync();
-            Task.Delay(100).Wait();         // 텀 주기, 잠시 대기
+            Task.Delay(100).Wait();         // temporary delay
         }
-        logger.LogDebug("All coroutines finished.");
+
+        // ReSharper disable once HeuristicUnreachableCode
+        logger?.LogDebug("All coroutines finished.");
     }
-
-    //private async Task PrintMessage(string label, int count, float delaySeconds, CancellationToken token)
-    //{
-    //    for (int i = 0; i < count; i++)
-    //    {
-    //        Console.WriteLine($"{label}: Step {i}");
-    //        ProcessWalletStatus();
-    //        await Wait.ForSeconds(delaySeconds, token);
-    //    }
-
-    //    Console.WriteLine($"{label} finished.");
-    //}
 
     private async Task ActionCoroutine(Action act, CancellationToken token, int nLoopCount = 10)
     {
         int counter = 0;
         while (!token.IsCancellationRequested && counter < nLoopCount)
         {
-            logger.LogDebug($"Counter: {counter++}");
+            logger?.LogDebug($"Counter: {counter++}");
             act();
             await Wait.ForSeconds(1.0f, token);
         }
@@ -73,20 +90,22 @@ public class UpbitManager   // singleton 보장은...?
 
     public void EnqueueWalletStatus(string json)
     {
-        logger.LogDebug($"{DateTime.Now}\t[Get]EnqueueWalletStatus");
+        logger?.LogDebug($"{DateTime.Now}\t[Get]EnqueueWalletStatus");
 
         qWalletResult.Enqueue(json);
     }
 
     private void ProcessWalletStatus()
     {
-        logger.LogDebug($"{DateTime.Now}\t Start ProcessWalletStatus");
+        logger?.LogDebug($"{DateTime.Now}\t Start ProcessWalletStatus");
 
-        while (qWalletResult.TryDequeue(out var json))
+        while (qWalletResult
+            .TryDequeue(out var json))
         {
-            // JSON 처리 로직 구현
-            logger.LogDebug($"{DateTime.Now}\tProcessing wallet status");
+            // TODO: add JSON processing logic
+            logger?.LogDebug($"{DateTime.Now}\tProcessing wallet status");
         }
-        logger.LogDebug($"{DateTime.Now}\t Finish ProcessWalletStatus");
+
+        logger?.LogDebug($"{DateTime.Now}\t Finish ProcessWalletStatus");
     }
 }
